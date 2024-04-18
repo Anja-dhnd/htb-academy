@@ -81,3 +81,36 @@ xfreerdp /v:<targetIp> /u:htb-student /p:Password
 
 there are other tools like remmina and rdesktop
 
+## Operating Systems Structure 
+
+in windows the root directory is `<drive letter>:\` and it is commonly in the `C` drive   
+also known as the boot partition, and is where the OS is installed 
+
+there are other physical and virtual drives that are assigned other letters like `Data (E:)` 
+
+the directory structure of the boot partition is as follows: 
+
+![](Images/Pasted%20image%2020240417171500.png)
+
+we can explore directories using the `dir` command: 
+
+![](Images/Pasted%20image%2020240417172820.png)
+
+![](Images/Pasted%20image%2020240417172921.png)
+
+the `tree` utility will graphically display the directory structure of a path or disk: 
+
+![](Images/Pasted%20image%2020240417173912.png)
+
+you can alternatively view all of this info one page at a time with: 
+
+```
+tree c:\ /f | more
+```
+
+can use dir and cat to find flag file: 
+
+![](Images/Pasted%20image%2020240417174154.png)
+
+## File System 
+
