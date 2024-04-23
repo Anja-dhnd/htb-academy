@@ -201,3 +201,264 @@ we can see that the user "bob.smith" has full access control over the users dire
 
 ![](Images/Pasted%20image%2020240417183047.png)
 
+## NTFS vs. Share Permissions
+
+windows is around 70% of global market share of desktop OS, so malware authors choose this to write exploits for   
+
+many variants of malware for windows can be spread over the network via network shares with lenient permissions applied   
+
+server message block SMB is used in windows to connect shared resources like files and printers: 
+
+![](Images/Pasted%20image%2020240420131503.png)
+
+note that NTFS permissions and share permissions are not the same 
+
+share permissions: 
+- full control = all actions given by Change and Read permissions as well as change permissions for NTFS files and subfolders 
+- Change = read, edit, delete and add files and subfolders 
+- Read = view file and subfolder contents 
+
+NTFS basic permissions: 
+- full control = add, edit, move, delete files and folders and change NTFS permissions that apply to all allowed folders 
+- modify = permitted or denied permissions to view and modify files and folders, includes adding or deleting files 
+- read and execute = permitted or denied permissions to read the contents of files and execute programs 
+- list folder contents = permitted or denied permissions to view a  listing of files and subfolders
+- read = permitted or denied permissions to read contents of files 
+- write = permitted or denied permissions to write changes to a file and add new files to a folder
+- special permissions = variety of advanced permissions options 
+
+NTFS special permissions: 
+- full control 
+- traverse folder / execute file = access subfolder within directory even if user is denied access to contents at parent folder level; also execute programs 
+- list folder/read data = view files and folders contained in the parent folder; also open and view files 
+- read attributes = view basic attributes of a file or folder (system, archive, read-only, hidden)
+- read extended attributes = extended attributes of file or folder 
+- create files/write data = create files within a folder and make changes to a file 
+- create folder/append data = create subfolders within a folder, data can be added to files but pre-existing content cant be overwritten 
+- write attributes = change file attributes, does not grant access to creating files or folders 
+- write extended attributes = change extended attributes of file or folder 
+- delete subfolders and files = delete subfolders and files, parent folders will not be deleted
+- delete = delete parent folders, subfolders, or files 
+- read permissions = read permissions of a folder
+- change permissions = change permissions of a file or folder
+- take ownership = take ownership of a file or folder, owner of a file has full permissions to change any permissions 
+
+NTFS permissions apply to the system where the folder and files are hosted  
+folders created in NTFS inherit permissions from parent folders by default, but it is possible to set custom permissions on parent and subfolders   
+
+the share permissions apply when the folder is being accessed through SMB, typically from a different system over the network   
+this means that someone logged in locally or via RDP can access the shared folder and files by navigating to them and only need to consider NTFS permissions 
+
+### Creating a network share 
+
+keep in mind that in most orgs, shares are created on a storage area network SAN, network attached storage NAS, or a separate partition on drives accessed via a server OS like windows server 
+
+if we ever see shares on a desktop OS it will probably be a small business or it could be a beachhead system used by a pen tester or malicious attacker to gather and exfiltrate data 
+
+create a new folder: 
+
+![](Images/Pasted%20image%2020240420141751.png)
+
+enable advanced sharing: 
+
+![](Images/Pasted%20image%2020240420141827.png)
+
+![](Images/Pasted%20image%2020240420141849.png)
+
+note that the share name defaults to the name of the folder   
+we can also limit the number of users connected to that share at the same time 
+
+similar to NTFS permissions there is an ACL for shared resources   
+with shared resources, both SMB and NTFS permissions apply to every resource that gets shared in windows   
+ACEs are made up of users and groups (also called security principles) 
+
+we can see the current ACE and permissions settings: 
+
+![](Images/Pasted%20image%2020240420150315.png)
+
+we can test the permissions by using `smbclient` where our pwnbox is our client and the windows 10 target is our server: 
+
+```
+smbclient -L SERVER_IP -U htb-student
+```
+
+![](Images/Pasted%20image%2020240420150557.png)
+
+```shell
+smbclient '\\SERVER_IP\Company Data' -U htb-student
+```
+
+![](Images/Pasted%20image%2020240420150617.png)
+
+even though we have all our entries correct and our permissions list has Everyone group with at least read permissions, what could stop us from accessing the share? 
+
+### Windows defender firewall configuration 
+
+the firewall could potentially block us from accessing the SMB share   
+in our example we are connecting from a linux system that is not joined to the same `workgroup`   
+
+when a windows system is part of a workgroup, all `netlogon` requests are authenticated against that system's `SAM` database   
+when a windows system is joined to a windows domain environment, all netlogon requests are authenticated through active directory   
+
+windows defender firewall profiles: 
+- public 
+- private
+- domain 
+
+firewall rules on desktop systems can be centrally managed when joined to a windows domain environment through the use of Group Policy   
+
+with the proper inbound firewall rules are enabled we can connect to the share  
+we can only connect because our user account `htb-student` is in the Everyone group   
+once a connection is set with a share, we can create a mount point from our pwnbox to the windows 10 target box's file system 
+
+keep in mind that the NTFS permissions apply to the share: 
+
+![](Images/Pasted%20image%2020240420154731.png)
+
+gray checkmarks mean they are inherited from the parent folder   
+by default all NTFS permissions are inherited from the parent directory which is often the `C:\` drive unless an admin has disabled inheritance inside a newly created folder's advanced security settings 
+
+lets give the Everyone group Full Control at the share level and testing a mount point: 
+
+```shell-session
+sudo mount -t cifs -o username=htb-student,password=Academy_WinFun! //ipaddoftarget/"Company Data" /home/user/Desktop/
+```
+
+```shell-session
+sudo apt-get install cifs-utils
+```
+
+the `net share` command allows us to view all the shared folders on the system: 
+
+![](Images/Pasted%20image%2020240420155935.png)
+
+Computer Management is another tool we can use to identify and monitor shared resources on a windows system: 
+
+![](Images/Pasted%20image%2020240420160108.png)
+
+this is a good place to check when a breach related to SMB has occurred 
+
+Event Viewer can alo be used to view share access logs: 
+
+![](Images/Pasted%20image%2020240420160254.png)
+
+## Windows Services & Processes
+
+
+
+## Service Permissions
+
+services allow for the management of long-running processes and are a critical part of windows OS   
+these are often potential threat vectors for things like loading malicious DLLs, execute apps unauthenticated, escalate privileges and even maintain persistence  
+
+first need to understand importance of service permissions and that they exist or be mindful of them  
+critical services like DHCP and AD commonly get installed using the admin account   
+these services by default are configured to run with the privileges of the user who is currently logged on   
+it is highly recommended to create an individual user account to run critical network services, or service accounts 
+
+### Examining services using services.msc 
+
+we can use the Services app to view the service associated with windows update: 
+
+![](Images/Pasted%20image%2020240423162623.png)
+
+the path to the executable is the full path to the program and the command to execute when the service starts  
+if the NTFS permissions of the destination directory are configured with weak permissions then an attacker could replace the original executable with one created for malicious processes   
+
+most services run with LocalSystem privileges by default which is the highest level of access allowed on an individual windows OS: 
+
+![](Images/Pasted%20image%2020240423162830.png)
+
+not all apps need local system permissions so it is good to perform research on a case-by-case basis when installing new apps in an windows environment 
+
+notable built-in service accounts in windows:   
+- LocalService
+- NetworkService
+- LocalSystem
+
+we can also create new accounts and use them for the sole purpose of running a service 
+
+the recovery tab shows steps should a service fail: 
+
+![](Images/Pasted%20image%2020240423163020.png)
+
+you can also set a program to run after the first failure, and this is another vector that could be used to run a malicious program 
+
+### Examining services using sc 
+
+sc can also be used to configure and mange services: 
+
+`sc qc wuauserv`
+
+![](Images/Pasted%20image%2020240423163646.png)
+
+`sc qc` is used to query the service and knowing the name of the service comes in handy   
+
+if we wanted to query a service used over the network we could specify the hostname or IP address: 
+
+`sc <hostname or IP>`
+
+we can also use this to start and stop services: 
+
+`sc stop wuauserv`
+
+however we might be denied access to start/stop services but we can run command prompt with elevated privileges: 
+
+`sc config wuauserv binPath=C:\<malicious program path>`
+
+![](Images/Pasted%20image%2020240423164027.png)
+
+if we were investigating a situation with potential malware, `sc` would give us the ability to quickly search and analyze commonly targeted services and newly created services   
+
+we can also examine service permissions with `sdshow`: 
+
+`sc sdshow wuaserv`
+
+![](Images/Pasted%20image%2020240423164210.png)
+
+every named object in windows is a securable object, and even some unnamed objects are securable   
+if its securable it will have a security descriptor which identify the object's owner and primary group containing a discretionary access control list DACL and system access control list SACL  
+
+generally a DACL is used to control access to an object and SACL is used to account for and log access attempts   
+
+```
+D:(A;;CCLCSWRPLORC;;;AU)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)
+```
+
+the above is a format known as security descriptor definition language SDDL   
+it isn't very helpful to read from left to right, and instead can be read in this order: 
+
+`D: (A;;CCLCSWRPLORC;;;AU)`
+
+1. `D:` - proceeding characters are DACL permissions
+2. `AU:` - security principle authenticated users
+3. `A;;` - access is allowed 
+4. `CC` - SERVICE_QUERY_CONFIG is the full name, and is a query to the service control manager SCM for the service configuration 
+5. `LC` - SERVICE_QUERY_STATUS is the full name, and is a query to the service control manager SCM for the current status of the service 
+6. `SW` - SERVICE_ENUMERATE_DEPENDENTS which enumerates a list of dependent services
+7. `RP` - SERVICE_START will start the service 
+8. `LO` - SERVICE_INTERROGATE will query the service for its current status 
+9. `RC` - READ_CONTROL will query the security descriptor of the service 
+
+each set of 2 characters between semi-colons is an action allowed to be performed by a specific user or group   
+
+then the characters after the last set of semi-colons specify the security principal (user and or group) that is permitted to perform these actions: 
+
+`;;;AU`
+
+then after the opening parenthesis and before the first set of semicolons defines whether the actions are allowed or denied: 
+
+`A;;`
+
+in this example, the entire security descriptor for the windows update service has three sets of access control entries because there are three different security principles   
+
+### Examine service permissions using powershell
+
+`Get-Acl` will examine service permissions by targeting the path of a service in the registry: 
+
+`Get-ACL -Path HKLM:\System\CurrentControlSet\Services\wuauserv | Format-List`
+
+![](Images/Pasted%20image%2020240423165419.png)
+
+this will output specific account permissions in easy to read format and in an SDDL   
+the SID for each security principle is present in the SDDL   
