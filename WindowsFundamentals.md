@@ -344,7 +344,95 @@ Event Viewer can alo be used to view share access logs:
 
 ## Windows Services & Processes
 
+services allow for the creation and management of long-running processes   
+they can be started auto at system boot without user intervention   
+they can continue to run in the background even after the user logs out of their account  
 
+applications can also be created to install a service like a network monitoring app installed on the server  
+
+services are managed via the service control manager SCM system, accessible via the `services.msc` MMC add-in   
+this add-in provides a GUI interface for interacting with and managing services 
+
+can query and manage services via the command line using `sc.exe` using powershell cmdlets like `Get-Service`: 
+
+`Get-Service | ? {$_.Status -eq "Running"} | select -First 2 |fl`
+
+![](Images/Pasted%20image%2020240424154437.png)
+
+service statuses can be running, stopped, or paused and they can be start manually, auto, or on a delay at system boot   
+they can also be shown in the state of starting or stopping if an action has triggered them 
+
+three categories of services: 
+- local services
+- network services
+- system services 
+
+windows has some critical system services that can't be stopped or restarted without a system restart   
+if we update any file or resource in use by one of these resources then we need to restart: 
+
+![](Images/Pasted%20image%2020240424154637.png)
+
+### Processes
+
+processes run in the background on windows systems   
+they either run auto or are started by other installed apps 
+
+some processes like those from apps can be terminated with little affect on the system but there are also critical processes that if stopped will stop certain components of the OS from running correctly   
+
+some examples of critical processes are: 
+- windows logon application 
+- system 
+- system idle process
+- windows start up application 
+- client server runtime 
+- windows session manager 
+- service host 
+- local security authority subsystem services LSASS
+
+### Local security authority subsystem service (LSASS)
+
+`lsass.exe` is the process for enforcing the security policy on windows systems   
+when a user attempts to logon, lsass will verify their log on and create access tokens based on the user's permission levels   
+also responsible for password changes   
+
+all events associated with this process are logged in the Windows security log   
+
+several tools exist to extract both cleartext and hashed credentials stored in memory by this process 
+
+### Sysinternals tools
+
+the sysinternals tools suite is a set of portable windows apps that can be used to admin windows systems usually without installation   
+
+can either be downloaded from microsoft or by loading them directly from the internet file share with: 
+
+`\\live.sysinternals.com\tools`
+
+![](Images/Pasted%20image%2020240424155652.png)
+
+has tools like process explorer, and enhanced task manager, and process monitor   
+
+these are good tools for pen tests because they can discover processes and possible privilege escalation paths for lateral movement 
+
+### Task manager 
+
+provides info about running processes, system performance, running services, startup programs, logged-in users or logged in user processes, and services   
+
+ways to open: 
+- right click taskbar
+- ctrl + shift + esc 
+- ctrl + alt + delete 
+- start menu
+- `taskmgr` from cmd or powershell 
+
+![](Images/Pasted%20image%2020240424160015.png)
+
+### Process explorer 
+
+part of the sysinternals suite   
+can show which handles and DLL processes are loaded when a program runs   
+shows list of currently running processes, and from there we can see what handles the process has selected or the DLLs and memory swapped files that have been loaded   
+
+can also analyze parent-child process relationships which can help troubleshoot issues like an orphaned child from a process that has been terminated
 
 ## Service Permissions
 
