@@ -550,3 +550,148 @@ in this example, the entire security descriptor for the windows update service h
 
 this will output specific account permissions in easy to read format and in an SDDL   
 the SID for each security principle is present in the SDDL   
+
+## Windows Sessions 
+
+### Interactive 
+
+an interactive or local logon session is when a user authenticates to a local or domain system by entering their credentials   
+can be initiated by logging on directly into the system, requesting a secondary logon session using `runas` command, or with RDP 
+
+### Non-interactive 
+
+non-interactive accounts do not require login credentials 
+
+3 types of non-interactive accounts: 
+- local system account
+- local service account 
+- network service account
+
+generally used by windows OS to auto start services and apps without user interaction   
+no password associated to them and are used to start services when system boots or to run scheduled tasks 
+
+local system account - `NT AUTHORITY\SYSTEM` account; most powerful account in windows systems. Used for variety of OS tasks like starting services. More powerful than accounts in the local admin group 
+
+local service account - `NT AUTHORITY/LocalService`, less privileged version of the SYSTEM account and has similar privileges to a local user account. Granted limited functionality and can start some services 
+
+network service account - `NT AUTHORITY\NetworkService`, similar to standard domain user account. Has similar privileges to local service account on the local machine. Can establish authenticated sessions for certain network services 
+
+## Interacting with the Windows Operating System 
+
+### GUI
+
+sys admins can use GUI for admin active directory, config IIS, or interacting with databases 
+
+### RDP 
+
+proprietary microsoft protocol that allows users to connect to a remote system over a network connection and use a GUI   
+
+connect using RDP client software to a target system running RDP server software   
+
+uses port 3389
+
+can also be used by users connecting to work pc while traveling after connecting to a VPN 
+
+### Windows command line 
+
+used for automation 
+
+cmd and powershell 
+
+### CMD
+
+enter and execute commands 
+
+start menu, `cmd` in run dialogue box, or `C:\Windows\system32\cmd.exe`
+
+![](Images/Pasted%20image%2020240429174727.png)
+
+can do `help <command name>`: 
+
+![](Images/Pasted%20image%2020240429174809.png)
+
+some commands have their own help menus which can be used with `<command> /?` like: 
+
+![](Images/Pasted%20image%2020240429174920.png)
+
+### Powershell 
+
+command shell more for admin 
+
+very powerful for interacting with the OS 
+
+gives us direct access to the file system and we can run most of the same commands that we can run within a cmd shell 
+
+### Cmdlets 
+
+powershell uses `cmdlets` which are small single-function tools built into the shell   
+more than 100 cmdlets and many others that have been written and we can also make our own 
+
+in the form of `Verb-Noun`   
+
+`Get-ChildItem` can be used to list current directory: 
+
+![](Images/Pasted%20image%2020240429175203.png)
+
+if we start an argument with `-` like `Get-ChildItem -` we can use tab to cycle through all the available arguments   
+for example we can use `-Recurse` to show all contents of subdirectories as well, or we can use `-Path` and provide a path to get the contents of that folder   
+we could also combine those two 
+
+### Aliases 
+
+many cmdlets have aliases   
+for example aliases for the cmdlet `Set-Location` to change directories is either `cd` or `sl`   
+`Get-ChildItem` is `ls` and `gci`   
+
+we can view all available aliases with `Get-Alias`: 
+
+![](Images/Pasted%20image%2020240429175518.png)
+
+we can also set up our own aliases with `New-Alias` and get the alias for any cmdlet with `Get-Alias -Name`: 
+
+`New-Alias -Name "Show-Files" Get-ChildItem` 
+
+`Get-Alias -Name "Show-Files"`
+
+powershell also has a help system for cmdlets, functions, scripts, and concepts; not installed by default  
+we can either run `Get-Help <cmdlet-name> -Online` to open the online help in web browser, or we can use `Update-Help` to download and install help files locally 
+
+using a command like `Get-Help Get-AppPackage` will return the partial help unless the help files are installed 
+
+### Running scripts 
+
+the powershell ISE (integrated scripting environment) allows users to write scripts 
+
+we can run in a variety of ways  
+if we know the functions we can run the script locally or after loading into memory with a download cradle like: 
+
+`.\PowerView.ps1;Get-LocalGroup |fl`
+
+![](Images/Pasted%20image%2020240429180646.png)
+
+common way to work with a script is to import it so that all functions are available with: 
+
+`Import-Module .\PowerView.ps1`  
+
+we can then either start a command and cycle through the options or use `Get-Module` to list all loaded modules and their associated commands: 
+
+`Get-Module | select Name,ExportedCommands | fl` 
+
+### Execution policy 
+
+execution policy will prevent the execution of malicious scripts 
+
+the possible policies are: 
+
+![](Images/Pasted%20image%2020240429181719.png)
+
+can view the execution policy with `Get-ExecutionPolicy -List`: 
+
+![](Images/Pasted%20image%2020240429182017.png)
+
+the execution policy is not meant to be a security control as it can be easily bypassed by either writing the commands of a script one by one or by changing the execution policy if the user can do so   
+
+we can change the execution policy with `Set-ExecutionPolicy Bypass -Scope Process`
+
+## Windows Management Instrumentation (WMI)
+
