@@ -695,3 +695,42 @@ we can change the execution policy with `Set-ExecutionPolicy Bypass -Scope Proce
 
 ## Windows Management Instrumentation (WMI)
 
+WMI is a subsystem of powershell that gives admin powerful tools for system monitoring   
+goal is to consolidate device and app management across corporate networks     
+core part of OS 
+
+made up of these components: 
+
+![](Images/Pasted%20image%2020240429182747.png)
+
+some of the uses for WMI are: 
+- status info for local/remote systems 
+- config security settings on remote machines/apps 
+- setting and changing user and group permissions 
+- setting/modifying system properties
+- code execution 
+- scheduling processes
+- setting up logging
+
+wmi can be run be run with windows command prompt with `WMIC` to open interactive shell or by using a command like `wmic computersystem get name` to get the hostname   
+can also get a list of wmic commands with `WMIC /?` 
+
+`wmic os list brief` will list info about the OS: 
+
+![](Images/Pasted%20image%2020240429184000.png)
+
+`list` will show data, `brief` will provide just the core set of properties 
+
+wmi can be used with powershell using `Get-WmiObject`   
+used to get instances of WMI classes or info about available classes   
+
+get info about the OS with: 
+
+`Get-WmiObject -Class Win32_OperatingSystem | select SystemDirectory,BuildNumber,SerialNumber,Version | ft`
+
+we can also use the `Invoke-WmiMethod` module which calls the methods of WMI objects   
+
+can rename a file with: 
+
+`Invoke-WmiMethods -Path "CIM_DataFile.Name='C:\users\public\spns.csv'" -Name Rename -ArgumentList "C:\Users\Public\kerberoasted_users.csv"` 
+
