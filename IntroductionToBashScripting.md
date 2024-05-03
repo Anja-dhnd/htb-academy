@@ -118,3 +118,148 @@ some of the functionalities of this script are:
 
 ## Conditional Execution 
 
+looking at the first section of our previous example: 
+
+```bash
+#!/bin/bash
+
+# Check for a given argument
+if [ $# -eq 0 ]
+then 
+	echo -e "You need to specify the target domain.\n"
+	echo -e "Usage:"
+	echo -e "\t$0 <domain>"
+	exit 1
+else 
+	domain=$1
+fi
+```
+
+the above works with these components: 
+- `#!/bin/bash` - shebang
+- `if-else-fi` - conditional
+- `echo` - print output
+- `$#`, `$0`, `$1` - special variables
+- `domain` - variables 
+
+the conditional we use will compare the values of variables using the equals comparison operator `-eq` 
+
+### Shebang
+
+the shebang is always at the top of the file and starts with `#!` followed by the path to the specified interpreter `/bin/bash` with which the script will be executed   
+we can also use other interpreters like python, perl, and others: 
+
+```python
+#!/usr/bin/env python
+```
+
+```perl
+#!/usr/bin/env perl
+```
+
+### If-else-fi
+
+in pseudo-code, our example conditional looks like:   
+
+```
+if [ the number of given arguments equals 0 ]
+then 
+	print you need to specify target domain
+	print empty line 
+	print Usage: 
+	print <name of script> <domain>
+	exit script with an error
+else
+	the "domain" variable will be the alias for the given argument 
+fi = finish the if-conditional 
+```
+
+by default, an if-else can only contain a single `if`: 
+
+```bash
+#!/bin/bash 
+
+value=$1
+
+if [ $value -gt "10" ]
+then 
+	echo "the argument is greater than 10"
+fi
+```
+
+```bash
+bash if-only.sh 5
+```
+
+```bash
+bash if-only.sh 12
+```
+
+we can use `elif` or `else` to add alternatives to our conditional: 
+
+```bash 
+#!/bin/bash 
+
+value=$1
+
+if [ $value -gt "10" ]
+then
+	echo "argument is greater than 10"
+elif [ $value -lt "10" ]
+then 
+	echo "argument is less than 10"
+else
+	echo "argument is not a number"
+fi
+```
+
+we could extend our script to look for specific numbers of arguments: 
+
+```bash 
+if [ $# -eq 0 ]
+then 
+	... 
+elif [ $# -eq 1 ]
+then 
+	domain=$1
+else
+	...
+fi
+```
+
+exercise script: 
+
+```bash
+#!/bin/bash
+# Count number of characters in a variable:
+#     echo $variable | wc -c
+
+# Variable to encode
+var="nef892na9s1p9asn2aJs71nIsm"
+
+for counter in {1..40}
+do
+    var=$(echo $var | base64)
+done
+```
+
+create an if-else condition in the for loop that prints the number of characters of the 35th generated value of the variable var: 
+
+```bash
+#!/bin/bash
+# Count number of characters in a variable:
+#     echo $variable | wc -c
+
+# Variable to encode
+var="nef892na9s1p9asn2aJs71nIsm"
+
+for counter in {1..40}
+do
+	var=$(echo $var | base64)
+	
+	if [ $counter -eq 35 ]
+	then 
+		echo $(echo $var | wc -c)
+	fi
+done
+```
