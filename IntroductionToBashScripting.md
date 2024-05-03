@@ -263,3 +263,76 @@ do
 	fi
 done
 ```
+
+## Arguments, Variables, and Arrays
+
+in bash we can always pass up to 9 arguments `$0`-`$9` to the script without assigning them to variables or setting the corresponding requirements for these   
+9 arguments because `$0` is reserved for the script itself: 
+
+```bash
+./script.sh ARG1 ARG2 ARG3 ... ARG9
+$0           $1   $2   $3       $9
+```
+
+these variables are called `special variables` 
+
+make sure to set the scripts execution privileges: 
+
+```bash
+chmod +x cidr.sh
+```
+
+### Special variables
+
+special variables use the internal field separator (IFS) to identify when an argument ends and the next begins   
+
+some special variables are: 
+- `$#` - holds the number of arguments passed into the script
+- `$@` - retrieve the list of cli arguments
+- `$n` - each cli argument can be retrieved using its position, ex: first argument is `$1`
+- `$$` - process ID of the currently running process
+- `$?` - exit status of the script, useful to determine a command's success; 0 = success and 1 = fail 
+
+### Variables
+
+we can see in our script that we assign the value of the first special variable to a new variable called `domain`   
+assign a variable without `$`: 
+
+```bash
+domain=$1
+```
+
+the `$` is only intended to allow the variable's value to be used   
+remember that there can't be spaces when assigning variables 
+
+there are no types in bash like other languages, all contents of variables are treated as strings   
+however, bash does allow arithmetic operations if only numbers are assigned   
+
+### Arrays
+
+arrays can store an ordered sequence of specific type values   
+start at 0 like other langs  
+use `()` to define array: 
+
+```bash
+#!/bin/bash
+
+domains=(www.inlanefreight.com ftp.inlanefreight.com ...)
+
+echo ${domains[0]}
+```
+
+note that we can use `''` or `""` to assign values as well if we need to use spaces   
+also see above that we use `{}` to get the value of an indexed element  
+
+if we have arrays.sh: 
+
+```bash
+#!/bin/bash
+
+domains=("www.inlanefreight.com ftp.inlanefreight.com vpn.inlanefreight.com" www2.inlanefreight.com)
+echo ${domains[0]}
+```
+
+this would print out `www.inlanefreight.com ftp.inlanefreight.com vpn.inlanefreight.com` because the quotes will make it all one element, so we could then use `echo ${domain[1]}` to print out the next element 
+
