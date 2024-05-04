@@ -516,3 +516,31 @@ done
 
 notice in the above that we combine `[[]]` and `[]` using logical operators, we use `$var == *"$value"*` to check if a string exists within another one, and we use `tail -c 20` to get the last 20 characters of the output 
 
+## Arithmetic 
+
+arithmetic operators: 
+- `+`
+- `-`
+- `*`
+- `/`
+- `%`
+- `i++`
+- `i--`
+
+```bash
+#!/bin/bash
+
+increase=1
+decrease=2
+
+echo "10 + 10 = $((10 + 10))"
+echo "10 - 10 = $((10 - 10))"
+echo "10 * 10 = $((10 * 10))"
+echo "10 / 10 = $((10 / 10))"
+echo "10 % 10 = $((10 % 10))"
+
+((increase++))
+((decrease--))
+```
+
+we can also calculate the length of a variable using `${#variable}`
