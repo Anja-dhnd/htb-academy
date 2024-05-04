@@ -544,3 +544,57 @@ echo "10 % 10 = $((10 % 10))"
 ```
 
 we can also calculate the length of a variable using `${#variable}`
+
+## Input and Output
+
+we might get results from any sent requests and executed commands, which we have to decide manually how to proceed  
+we need a way to get a running script to wait for our instructions   
+
+```bash
+# Available options
+<SNIP>
+echo -e "Additional options available:"
+echo -e "\t1) Identify the corresponding network range of target domain."
+echo -e "\t2) Ping discovered hosts."
+echo -e "\t3) All checks."
+echo -e "\t*) Exit.\n"
+
+read -p "Select your option: " opt
+
+case $opt in
+	"1") network_range ;;
+	"2") ping_host ;;
+	"3") network_range && ping_host ;;
+	"*") exit 0 ;;
+esac
+```
+
+we can see that with `read -p` we get a line of input   
+
+for output we can avoid waiting for our scripts results by using `tee`   
+this will ensure that we get our results immediately and that they are stored in the corresponding files  
+
+```bash
+<SNIP>
+
+# Identify Network range for the specified IP address(es)
+function network_range {
+	for ip in $ipaddr
+	do
+		netrange=$(whois $ip | grep "NetRange\|CIDR" | tee -a CIDR.txt)
+		cidr=$(whois $ip | grep "CIDR" | awk '{print $2}')
+		cidr_ips=$(prips $cidr)
+		echo -e "\nNetRange for $ip:"
+		echo -e "$netrange"
+	done
+}
+
+<SNIP>
+
+# Identify IP address of the specified domain
+hosts=$(host $domain | grep "has address" | cut -d" " -f4 | tee discovered_hosts.txt)
+
+<SNIP>
+```
+
+we use `tee -a CIDR.txt` to ensure that the file is appended 
