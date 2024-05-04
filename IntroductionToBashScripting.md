@@ -832,3 +832,107 @@ esac
 
 we define 4 different options that call different functions based on the pattern
 
+## Functions 
+
+functions are created using `{}`   
+need to be defined logically before it is called  
+
+```bash
+function name {
+	<commands>
+}
+```
+
+```bash
+name() {
+	<commands>
+}
+```
+
+```bash
+# Identify Network range for the specified IP address(es)
+function network_range {
+	for ip in $ipaddr
+	do
+		netrange=$(whois $ip | grep "NetRange\|CIDR" | tee -a CIDR.txt)
+		cidr=$(whois $ip | grep "CIDR" | awk '{print $2}')
+		cidr_ips=$(prips $cidr)
+		echo -e "\nNetRange for $ip:"
+		echo -e "$netrange"
+	done
+}
+```
+
+```bash
+case $opt in
+	"1") network_range ;;
+	"2") ping_host ;;
+	"3") network_range && ping_host ;;
+	"*") exit 0 ;;
+esac
+```
+
+parameters can be passed just like the script itself with reserved variables `$1`-`$9`  
+remember that all variables are defined globally in bash   
+
+```bash
+#!/bin/bash
+
+function print_pars {
+	echo $1 $2 $3
+}
+
+one="hello"
+two="there"
+three="general"
+
+print_pars "$one" "$two" "$three"
+```
+
+return codes: 
+
+![](Images/Pasted%20image%2020240503194024.png)
+
+we can return a value of a function with `return`, `echo`, or a variable  
+
+using `$?` we can read the return code: 
+
+```bash
+#!/bin/bash
+
+function given_args {
+
+	if [ $# -lt 1 ]
+	then
+		echo -e "Number of arguments: $#"
+		return 1
+	else
+		echo -e "Number of arguments: $#"
+		return 0
+	fi
+}
+
+# No arguments given
+given_args
+echo -e "Function status code: $?\n"
+
+# One argument given
+given_args "argument"
+echo -e "Function status code: $?\n"
+
+# Pass the results of the funtion into a variable
+content=$(given_args "argument")
+
+echo -e "Content of the variable: \n\t$content"
+```
+
+## Debugging
+
+can use `-x` (xtrace) and `-v` options: 
+
+![](Images/Pasted%20image%2020240503194401.png)
+
+`-v` will show all the code for a function: 
+
+![](Images/Pasted%20image%2020240503194429.png)
+
