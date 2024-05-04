@@ -569,7 +569,7 @@ case $opt in
 esac
 ```
 
-we can see that with `read -p` we get a line of input   
+we can see that with `read -p "Select your option: " opt` we get a line of input   
 
 for output we can avoid waiting for our scripts results by using `tee`   
 this will ensure that we get our results immediately and that they are stored in the corresponding files  
@@ -598,3 +598,237 @@ hosts=$(host $domain | grep "has address" | cut -d" " -f4 | tee discovered_hosts
 ```
 
 we use `tee -a CIDR.txt` to ensure that the file is appended 
+
+## Flow Control - Loops
+
+branches: 
+- if-else
+- case
+
+loops: 
+- for 
+- while 
+- until
+
+### For loops
+
+syntax: 
+
+```bash
+for variable in 1 2 3 4
+do 
+	echo $variable
+done
+```
+
+```bash
+for variable in file1 file2 file3
+do 
+	echo $variable
+done
+```
+
+```bash
+for ip in "... ... .."
+do 
+	pint -c 1 $ip
+done
+```
+
+we could even write these commands in a single line: 
+
+```bash
+for ip in 10.10.10.170 10.10.10.170 10.10.10.170; do ping -c 1 $ip;done
+```
+
+our script uses multiple for loops:
+
+```bash
+<SNIP>
+
+# Identify Network range for the specified IP address(es)
+function network_range {
+	for ip in $ipaddr
+	do
+		netrange=$(whois $ip | grep "NetRange\|CIDR" | tee -a CIDR.txt)
+		cidr=$(whois $ip | grep "CIDR" | awk '{print $2}')
+		cidr_ips=$(prips $cidr)
+		echo -e "\nNetRange for $ip:"
+		echo -e "$netrange"
+	done
+}
+
+<SNIP>
+```
+
+each ip addresse is in an array `ipaddr` and we loop through it to capture the outputs of a few commands  
+
+### While loops
+
+```bash
+stat=1
+
+while [ $stat -eq 1 ]
+do 
+	...
+done
+```
+
+note that we can also use the command `break` to stop execution of a while loop: 
+
+```bash
+#!/bin/bash
+
+counter=0
+
+while [ $counter -lt 10 ]
+do 
+	((counter++))
+
+	if [ $counter -eq 2 ]
+	then
+		continue
+	else
+		break
+	fi
+done
+```
+
+### Until loops
+
+works a lot like while loops but with the difference that the code inside an until loop is executed as long as the particular condition is `false` rather than `true`
+
+```bash
+#!/bin/bash
+
+until [ $counter -eq 10 ]
+do 
+	((counter++))
+	echo $counter
+done
+```
+
+exercise script: 
+
+```bash
+#!/bin/bash
+
+# Decrypt function
+function decrypt {
+	MzSaas7k=$(echo $hash | sed 's/988sn1/83unasa/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/4d298d/9999/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/3i8dqos82/873h4d/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/4n9Ls/20X/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/912oijs01/i7gg/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/k32jx0aa/n391s/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/nI72n/YzF1/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/82ns71n/2d49/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/JGcms1a/zIm12/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/MS9/4SIs/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/Ymxj00Ims/Uso18/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/sSi8Lm/Mit/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/9su2n/43n92ka/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/ggf3iunds/dn3i8/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/uBz/TT0K/g')
+
+	flag=$(echo $MzSaas7k | base64 -d | openssl enc -aes-128-cbc -a -d -salt -pass pass:$salt)
+}
+
+# Variables
+var="9M"
+salt=""
+hash="VTJGc2RHVmtYMTl2ZnYyNTdUeERVRnBtQWVGNmFWWVUySG1wTXNmRi9rQT0K"
+
+# Base64 Encoding Example:
+#        $ echo "Some Text" | base64
+
+# <- For-Loop here
+
+# Check if $salt is empty
+if [[ ! -z "$salt" ]]
+then
+	decrypt
+	echo $flag
+else
+	exit 1
+fi
+```
+
+create a for loop that encodes the variable var 28 times in base64  
+the number of characters in the 28th hash is the value that must be assigned to the salt variable: 
+
+```bash
+#!/bin/bash
+
+# Decrypt function
+function decrypt {
+	MzSaas7k=$(echo $hash | sed 's/988sn1/83unasa/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/4d298d/9999/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/3i8dqos82/873h4d/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/4n9Ls/20X/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/912oijs01/i7gg/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/k32jx0aa/n391s/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/nI72n/YzF1/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/82ns71n/2d49/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/JGcms1a/zIm12/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/MS9/4SIs/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/Ymxj00Ims/Uso18/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/sSi8Lm/Mit/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/9su2n/43n92ka/g')
+	Mzns7293sk=$(echo $MzSaas7k | sed 's/ggf3iunds/dn3i8/g')
+	MzSaas7k=$(echo $Mzns7293sk | sed 's/uBz/TT0K/g')
+
+	flag=$(echo $MzSaas7k | base64 -d | openssl enc -aes-128-cbc -a -d -salt -pass pass:$salt)
+}
+
+# Variables
+var="9M"
+salt=""
+hash="VTJGc2RHVmtYMTl2ZnYyNTdUeERVRnBtQWVGNmFWWVUySG1wTXNmRi9rQT0K"
+
+# Base64 Encoding Example:
+#        $ echo "Some Text" | base64
+
+# <- For-Loop here
+for i in {1..28}
+do
+    var=$(echo "$var" | base64)
+done
+    
+salt=$(echo $var | wc -c)
+
+# Check if $salt is empty
+if [[ ! -z "$salt" ]]
+then
+	decrypt
+	echo $flag
+else
+	exit 1
+fi
+```
+
+## Flow Control - Branches
+
+switch cases always compare only the variable with the exact value: 
+
+```bash
+case <expression> in 
+	pattern_1 ) statements ;;
+	pattern_2 ) statements ;;
+	pattern_3 ) statements ;;
+esac
+```
+
+in our example: 
+
+```bash
+case $opt in
+	"1") network_range ;;
+	"2") ping_host ;;
+	"3") network_range && ping_host ;;
+	"*") exit 0 ;;
+esac
+```
+
+we define 4 different options that call different functions based on the pattern
+
