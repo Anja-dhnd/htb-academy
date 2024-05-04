@@ -336,3 +336,183 @@ echo ${domains[0]}
 
 this would print out `www.inlanefreight.com ftp.inlanefreight.com vpn.inlanefreight.com` because the quotes will make it all one element, so we could then use `echo ${domain[1]}` to print out the next element 
 
+## Comparison Operators
+
+there are different types of comparison operators: 
+- strings
+- integers
+- files
+- booleans
+
+### String operators
+
+if we compare strings then we can use: 
+- `==`
+- `! =`
+- `<`
+- `>`
+- `-z` = if the string is null
+- `-n` = if the string is not null
+
+in this sample script we put the argument variable `$1` in quotes to tell bash that its contents should be handled as a string, otherwise it would throw an error: 
+
+```bash
+#!/bin/bash
+
+if [ "$1" != "HackTheBox" ]
+then
+	echo -e "You need to give HackTheBox argument"
+	exit =
+elif [ $# -gt 1 ]
+then 
+	echo -e "Too many arguments"
+	exit 1
+else
+	domain=$1
+	echo -e "Success!"
+fi
+```
+
+string comparison operators `<` or `>` only work within double square brackets `[[ ]]`, and they go by ascii values  
+
+### Integer operators
+
+- `-eq`
+- `-ne` - not equal
+- `lt`
+- `le` - less than or equal to 
+- `gt`
+- `ge`
+
+```bash
+#!/bin/bash
+
+if [ $# -lt 1 ]
+then
+	echo -e "Less than 1 args"
+	exit 1
+elif [ $# -gt 1 ]
+then 
+	echo -e "Greater than 1 args"
+	exit 1
+else 
+	domain=$1
+	echo -e "1 arg"
+fi
+```
+
+### File operators
+
+file operators are useful to find out specific permissions or if they exist: 
+- `-e` - if the file exists
+- `-f` - tests if it is a file 
+- `-d` - tests if it is a directory 
+- `-L` - test if it is a symbolic link 
+- `-N` - if was modified after it was last read 
+- `-O` - if current user owns the file 
+- `-G` - if the file's group ID matches the current user's 
+- `-s` - if size is greater than 0 
+- `-r` - if it has read permission
+- `-w` - write permission
+- `-x` - execute permission
+
+```bash
+#!/bin/bash
+
+if [ -e "$1" ]
+then 
+	echo -e "The file exists"
+	exit 0
+else 
+	echo -e "File does not exist"
+	exit 2
+fi
+```
+
+### Boolean and logical operators 
+
+boolean values are `false` or `true` 
+
+```bash
+#!/bin/bash
+
+# check if the string is null 
+if [[ -z $1 ]]
+then 
+	echo -e "String is null"
+	exit 1
+elif [[ $# > 1 ]]
+then 
+	echo -e "Number of arguments is greater than 1"
+	exit 1
+else 
+	domain=$1
+	echo -e "1 argument passed"
+fi
+```
+
+### Logical operators
+
+- `!` - NOT
+- `&&` - AND
+- `||` - OR 
+
+```bash
+#!/bin/bash
+
+if [[ -e "$1" && -r "$1" ]]
+then 
+	echo -e "we can read the specified file"
+	exit 0
+elif [[ ! -e "$1" ]]
+then 
+	echo -e "Specified file does not exist"
+elif [[ -e "$1" && ! -r "$1" ]]
+then 
+	echo -e "we don't have read permission for this file"
+	exit 1 
+else 
+	echo "error"
+	exit 5
+fi
+```
+
+exercise script: 
+
+```bash
+#!/bin/bash
+
+var="8dm7KsjU28B7v621Jls"
+value="ERmFRMVZ0U2paTlJYTkxDZz09Cg"
+
+for i in {1..40}
+do
+	var=$(echo $var | base64)
+	
+	#<---- If condition here:
+done
+```
+
+create a conditional in the for loop that checks if var contains the contents of the value variable   
+also the variable var must have more than 113,450 characters   
+if these conditions are met then print the last 20 characters of the variable var 
+
+```bash
+#!/bin/bash
+
+var="8dm7KsjU28B7v621Jls"
+value="ERmFRMVZ0U2paTlJYTkxDZz09Cg"
+
+for i in {1..40}
+do
+	var=$(echo $var | base64)
+	
+	if [ $(echo $var | wc -c) -gt 113450 ] && [[ $var == *"$value"* ]]
+	then 
+		echo $(echo $var | tail -c 20)
+	fi
+done
+```
+
+notice in the above that we combine `[[]]` and `[]` using logical operators, we use `$var == *"$value"*` to check if a string exists within another one, and we use `tail -c 20` to get the last 20 characters of the output 
+
